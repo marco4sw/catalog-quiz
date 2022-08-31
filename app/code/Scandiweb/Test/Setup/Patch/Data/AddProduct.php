@@ -12,7 +12,6 @@ use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
 use Magento\Eav\Setup\EavSetup;
 use Magento\Framework\App\State;
-use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Framework\Setup\Patch\DataPatchInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\InventoryApi\Api\Data\SourceItemInterface;
@@ -21,32 +20,74 @@ use Magento\InventoryApi\Api\SourceItemsSaveInterface;
 
 class AddProduct implements DataPatchInterface
 {
+    /**
+     * Product SKU
+     * 
+     * @var string
+     */
     private const PRODUCT_SKU = 'scandiweb_product';
+
+    /**
+     * Categories to be linked to the product
+     * 
+     * @var array
+     */
     private const CATEGORIES = ['Default Category'];
     
-    protected ModuleDataSetupInterface $setup;
-
+    /**
+     * @var ProductRepositoryInterface $productRepository
+     */
     protected ProductRepositoryInterface $productRepository;
 
+    /**
+     * @var State
+     */
     protected State $appState;
 
+    /**
+     * @var EavSetup
+     */
     protected EavSetup $eavSetup;
 
+    /**
+     * @var StoreManagerInterface
+     */
     protected StoreManagerInterface $storeManager;
 
+    /**
+     * @var SourceItemInterfaceFactory
+     */
     protected SourceItemInterfaceFactory $sourceItemFactory;
 
+    /**
+     * @var SourceItemsSaveInterface
+     */
     protected SourceItemsSaveInterface $sourceItemsSaveInterface;
 
-    protected CategoryLinkManagementInterface $categoryLink
-    ;
+    /**
+     * @var CategoryLinkManagementInterface
+     */
+    protected CategoryLinkManagementInterface $categoryLink;
+
+    /**
+     * @var CategoryCollectionFactory
+     */
     protected CategoryCollectionFactory $categoryCollectionFactory;
 
     /**
      * Constructor
+     * 
+     * @param ProductInterfaceFactory $productInterfaceFactory
+     * @param ProductRepositoryInterface $productRepository
+     * @param State $appState
+     * @param StoreManagerInterface $storeManager
+     * @param EavSetup $eavSetup
+     * @param SourceItemInterfaceFactory $sourceItemFactory
+     * @param SourceItemsSaveInterface $sourceItemsSaveInterface
+     * @param CategoryLinkManagementInterface $categoryLink
+     * @param CategoryCollectionFactory $categoryCollectionFactory
      */
     public function __construct(
-        ModuleDataSetupInterface $setup,
         ProductInterfaceFactory $productInterfaceFactory,
         ProductRepositoryInterface $productRepository,
         State $appState,
@@ -60,7 +101,6 @@ class AddProduct implements DataPatchInterface
         $this->appState = $appState;
         $this->productInterfaceFactory = $productInterfaceFactory;
         $this->productRepository = $productRepository;
-        $this->setup = $setup;
         $this->eavSetup = $eavSetup;
         $this->storeManager = $storeManager;
         $this->sourceItemFactory = $sourceItemFactory;
@@ -74,11 +114,7 @@ class AddProduct implements DataPatchInterface
      */
     public function apply(): void
     {
-        $this->setup->startSetup();
-
         $this->appState->emulateAreaCode('adminhtml', [$this, 'execute']);
-
-        $this->setup->endSetup();
     }
 
     /**
